@@ -13,7 +13,7 @@ extension Path {
 	
 	///init with the "d" attribute from a "path" inside a "svg" element
 	/// based on https://www.w3.org/TR/SVG/paths.html#PathData
-	public init?(svg_d:String)throws {
+	public init(svg_d:String)throws {
 		self.init(subPaths: [])
 		
 		let scanner = Scanner(string: svg_d)
@@ -30,7 +30,9 @@ extension Path {
 				previousCoords = (x, y)
 				
 			case "m":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
 				let finalCoords = (x + coords.0, y + coords.1)
 				move(to:Point(x:finalCoords.0, y:finalCoords.1))
@@ -42,14 +44,18 @@ extension Path {
 				previousCoords = (x, y)
 				
 			case "l":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
 				let finalCoords = (x + coords.0, y + coords.1)
 				addLine(to: Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
 				
 			case "H":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
 				let x:Double = try scanner.scanDouble()
 				let finalCoords = (x, coords.1)
@@ -57,7 +63,9 @@ extension Path {
 				previousCoords = finalCoords
 				
 			case "h":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
 				let x:Double = try scanner.scanDouble()
 				let finalCoords = (x+coords.0, coords.1)
@@ -65,7 +73,9 @@ extension Path {
 				previousCoords = finalCoords
 				
 			case "V":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
 				let y:Double = try scanner.scanDouble()
 				let finalCoords = (coords.0, y)
@@ -73,7 +83,9 @@ extension Path {
 				previousCoords = finalCoords
 				
 			case "v":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
 				let y:Double = try scanner.scanDouble()
 				let finalCoords = (coords.0, coords.1+y)
@@ -83,6 +95,7 @@ extension Path {
 			case "Z", "z":
 				//close path
 				close()
+//				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
 				
 			case "Q":
 				let (x1, y1, x2, y2) = try scanner.scanDelimitedDoubles()
@@ -90,7 +103,9 @@ extension Path {
 				previousCoords = (x2, y2)
 				
 			case "q":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let (x1, y1, x2, y2) = try scanner.scanDelimitedDoubles()
 				let finalCoords = (coords.0+x2, coords.1+y2)
 				addCurve(near: Point(x: x1+coords.0, y: y1+coords.1), to: Point(x: finalCoords.0, y: finalCoords.1))
@@ -102,14 +117,18 @@ extension Path {
 				previousCoords = (x3, y3)
 				
 			case "c":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				let (x1, y1, x2, y2, x3, y3) = try scanner.scanDelimitedDoubles()
 				let finalCoords = (coords.0+x3, coords.1+y3)
 				addCurve(near: Point(x: coords.0+x1, y: coords.1+y1), and: Point(x: coords.0+x2, y: coords.1+y2), to: Point(x: finalCoords.0, y: finalCoords.1))
-				previousCoords = (x3, y3)
+				previousCoords = finalCoords
 				
 			case "t":
-				guard let coords = previousCoords else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				guard let coords = previousCoords else {
+					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
+				}
 				//previous segment must be a quadratic curve
 				guard let segment = subPaths.last?.segments.last
 					,case .quadratic(let control1) = segment.shape else {
@@ -164,7 +183,7 @@ extension Path {
 				let newControl2 = end + Point(x: cx2, y: cy2)
 				let newEnd = end + Point(x: ex, y: ey)
 				addCurve(near:newControl1, and:newControl2, to:newEnd)
-				previousCoords = (ex, ey)
+				previousCoords = (newEnd.x, newEnd.y)
 				
 			case "a", "A":
 				let (rx, ry, xAxisRotate, largeArcFlag, sweepFlag, x, y) = try scanner.scanDelimitedDoubles()
