@@ -4,20 +4,30 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftSVG",
-    products: [
+    name: "SwiftSVG"
+	,platforms: [
+        .macOS(.v10_15)
+	]
+    ,products: [
         .library(
             name: "SwiftSVG",
             targets: ["SwiftSVG"]),
-    ],
-    dependencies: [
-		.package(url: "https://github.com/benspratling4/SwiftGraphicsCore.git", from: "1.0.5"),
-//		.package(url: "https://github.com/benspratling4/SwiftPNG.git", from: "1.0.0"),	//for testing
-    ],
-    targets: [
+    ]
+    ,dependencies: [
+		.package(url: "https://github.com/benspratling4/SwiftGraphicsCore.git", from: "2.0.0"),
+		.package(url: "https://github.com/benspratling4/SwiftPatterns.git", from: "3.0.0"),
+		.package(path: "../SwiftCSS"),
+		.package(url: "https://github.com/benspratling4/SwiftPNG.git", from: "2.0.0"),	//for testing
+    ]
+    ,targets: [
         .target(
             name: "SwiftSVG",
-			dependencies: [.byName(name: "SwiftGraphicsCore")]),
+			dependencies: [
+				.byName(name: "SwiftGraphicsCore"),
+				.byName(name: "SwiftPatterns"),
+				.byName(name: "SwiftCSS"),
+				.byName(name: "SwiftPNG")
+		]),
         .testTarget(
             name: "SwiftSVGTests",
             dependencies: ["SwiftSVG"/*, "SwiftPNG"*/]),

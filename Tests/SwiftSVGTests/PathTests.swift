@@ -29,7 +29,7 @@ class PathTests:XCTestCase {
 		let colorSpace:ColorSpace = GenericRGBAColorSpace(hasAlpha: true)
 		let context = SampledGraphicsContext(dimensions: Size(width: 50.0, height: 50.0), colorSpace: colorSpace)
 		context.antialiasing = .subsampling(resolution: .three)
-		context.fillPath(bPath, color:colorSpace.black)
+//		context.fillPath(bPath, color:colorSpace.black)
 		
 		
 //		guard let pngData = context.image.pngData else {

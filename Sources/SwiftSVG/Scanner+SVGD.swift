@@ -120,6 +120,19 @@ extension CharacterSet {
 }
 
 extension Scanner {
+	
+	//can scan doubles separated by any whitespace, or nothing until it hits something that isnt a double
+	func scanDoublesUntilNoLongerScanable()->[Double] {
+		var answers:[Double] = []
+		_ = try? scanCharactersInSet(.delimiterSet)
+		while let newDouble:Double = scanDouble() {
+			answers.append(newDouble)
+			_ = try? scanCharactersInSet(.delimiterSet)
+		}
+		return answers
+	}
+	
+	
 	func scanSpaceSeparatedDoubles()throws->(Double, Double) {
 		let x:Double = try scanDouble()
 		_ = try scanCharactersFromSet(.delimiterSet)

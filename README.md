@@ -8,9 +8,19 @@ WIP feel free to contribute.  I'm aiming at supporting parsing all SVG, but rend
 
 TODO: Write methods which parse SVG and represent the data model as an SVGImage.
 
-TODO: write code which can play back an SVGImage as drawing commands into any SwiftGraphcisCore.GraphicsContext
+`let image = SVGImage("<svg ...>...</svg>")`
 
-TODO: write a convenience init which can produce a SampledImage from an SVGImage at a chosen pizel/point resolution.
+
+TODO: write code which can play back an SVGImage as drawing commands into any SwiftGraphicsCore.GraphicsContext
+
+`extension SwiftGraphicsContext {`
+
+`func drawSVGImage(_ image:SVGImage, in rect:Rect, pixelsPerPoint:Int) `
+
+`}`
+
+
+TODO: write a convenience init which can produce a SampledImage from an SVGElement at a chosen pizel/point resolution.
 
 
 ### Get a SwiftGraphicsCore.Path from an SVG "d" string:
@@ -25,8 +35,20 @@ TODO: add "arc" support.
 
 ## Writing to SVG
 
-TODO: Implement a concrete SwiftGraphcisCore.GraphicsContext which records drawing commands and can export an SVGImage.
+TODO: Implement a concrete SwiftGraphicsCore.GraphicsContext which records drawing commands and can export an SVGElement.
 
 
-TODO: Write a method on SVGImage which can generate appropriate self-contained XML.
+`let context = SVGGraphicsContext(....)`
+
+`context.drawPath(.....)`
+
+`let svgImage:SVGImage = context.svgImage`
+
+
+
+TODO: Write a method on SVGElement which can generate appropriate self-contained XML.
+
+
+
+
 
