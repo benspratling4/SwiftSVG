@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftPatterns
 import SwiftGraphicsCore
 import SwiftCSS
 
@@ -14,37 +15,115 @@ public enum PathElementError:Error {
 }
 
 
-public class PathElement : HTMLXMLNode {
-	/*
-	public init(path:Path, fillColor:SampledColor) {
-		var style:String = ""
-		if fillColor.components.count == 3 {
-			style = "fill:" + CSSColor.rgb(fillColor.components[0][0], fillColor.components[1][0], fillColor.components[2][0]).cssString
-		} else if fillColor.components.count == 4 {
-			style = "fill:" + CSSColor.rgba(fillColor.components[0][0], fillColor.components[1][0], fillColor.components[2][0], fillColor.components[3][0]).cssString
-		}
-		
-		super.init(name: "path", attributes: ["d":path.svg_d,
-											  "style":style
-		], children: [])
+public class PathElement : SVGChild {
+	
+	public init(path:Path, id:String? = nil, classes:[String] = []) {
+		self.path = path
+		self.id = id
+		self.classes = classes
 	}
 	
-	public init(path:Path, color:SampledColor, lineWidth:SGFloat) {
-		var style:String = ""
-		if fillColor.components.count == 3 {
-			style = "stroke:" + CSSColor.rgb(fillColor.components[0][0], fillColor.components[1][0], fillColor.components[2][0]).cssString
-		} else if fillColor.components.count == 4 {
-			style = "stroke:" + CSSColor.rgba(fillColor.components[0][0], fillColor.components[1][0], fillColor.components[2][0], fillColor.components[3][0]).cssString
+	public var path:Path
+	public var id:String?
+	public var classes:[String] = []
+	public var fillShader:Shader?
+	public var strokeShader:Shader?
+	public var strokeWidth:SwiftCSS.Dimension?
+	public var fillDefId:String?	//if the fill is a url(#____) instead
+	public var strokeDefId:String?	//if the fill is a url(#____) instead
+	
+	public var style:[Declaration] = []
+	
+	public init?(xmlItem:XMLItem) {
+		guard let d:String = xmlItem.attributes["d"]
+			,let path:Path = try? Path(svg_d: d)
+			else {
+			return nil
 		}
-		//TODO: color attribute
-		//TODO: write me
-		super.init(name: "path", attributes: ["d":path.svg_d,
-											  "style":style,
-											  "stroke-width":"\(lineWidth)"
-		], children: [])
+		self.path = path
+		self.id = xmlItem.attributes["id"]
+		self.classes = xmlItem.attributes["class"]?.components(separatedBy:" ") ?? []
+		if let fillString = xmlItem.attributes["fill"] {
+			let scanner:Scanner = Scanner(string: fillString)
+			_ = try? scanner.scanCharactersInSet(.whitespacesAndNewlines)
+			if let solidColor = scanner.scanCssColor() {
+				fillShader = SolidColorShader(color: SampledColor(cssColor: solidColor))
+			}
+		}
+		if let strokeString = xmlItem.attributes["stroke"] {
+			let scanner:Scanner = Scanner(string: strokeString)
+			_ = try? scanner.scanCharactersInSet(.whitespacesAndNewlines)
+			if let solidColor = scanner.scanCssColor() {
+				strokeShader = SolidColorShader(color: SampledColor(cssColor: solidColor))
+			}
+		}
+		style = xmlItem.attributes["style"].flatMap({ [Declaration](inlineStyle: $0) }) ?? []
+		
+		if let strokeWidthString:String = style.filter({ $0.name == "stroke-width" }).last?.value {
+			let scanner:Scanner = Scanner(string: strokeWidthString)
+			if let (number, units) = scanner.scanDimesions() {
+				strokeWidth = Dimension(number:number, unit:units)
+			} else if let number:Float64 = scanner.scanDouble() {
+				//assume pixels
+				strokeWidth = Dimension(number:number, unit:AbsoluteLengthUnits.px)
+			}
+		}
+		//find more things?
 	}
-	*/
+	
+	
+	public var xmlItem:XMLItem {
+		var additionalAttributes:[String:String] = ["d":path.svg_d]
+		if let id:String = self.id {
+			additionalAttributes["id"] = id
+		}
+		if classes.count > 0
+			,let classString:String = classes.joined(separator: " ") {
+			additionalAttributes["class"] = classString
+		}
+		if let solidShader:SolidColorShader = fillShader as? SolidColorShader
+			,let cssColor:CSSColor = solidShader.color.cssColor {
+			additionalAttributes["fill"] = cssColor.cssString
+		} else if let fillDef:String = fillDefId {
+			additionalAttributes["fill"] = "url(#\(fillDef))"
+		}
+		if let solidShader:SolidColorShader = strokeShader as? SolidColorShader
+			,let cssColor:CSSColor = solidShader.color.cssColor {
+			additionalAttributes["stroke"] = cssColor.cssString
+		} else if let strokeDef:String = strokeDefId {
+			additionalAttributes["stroke"] = "url(#\(strokeDef))"
+		}
+		if let width = strokeWidth {
+			additionalAttributes["stroke-width"] = width.cssString
+		}
+		
+		return XMLItem(name: "path", attributes:additionalAttributes, children: [])
+	}
+	
 }
+
+
+
+extension PathElement : DrawableChild {
+	
+	public func draw(in context: GraphicsContext) {
+		//FIXME: resolve physical dimensions
+		var stroke:(Shader, StrokeOptions)?
+		if let strokeWidth:SGFloat = self.strokeWidth?.number
+			,let strokeColor:Shader = self.strokeShader {
+			stroke = (strokeColor, StrokeOptions(lineWidth: strokeWidth))
+		}
+		
+		context.drawPath(path, fillShader: fillShader, stroke: stroke)
+	}
+	
+	public var boundingBox:Rect {
+		//FIXME: add line thickness
+		return path.boundingBox ?? Rect(origin: .zero, size: .zero)
+	}
+	
+}
+
 
 extension Path {
 	var svg_d:String {
@@ -68,41 +147,3 @@ extension Path {
 		return string
 	}
 }
-
-
-
-/*
-public struct PathElement : SVGXMLItem {
-	
-	public var d:String
-	
-	public var strokeColor:CSSColor?
-	
-	public var fillColor:CSSColor?
-	
-	//stroke-width
-	
-	
-	
-	//SVGXMLItem
-	
-	public init(xmlItem:XMLItem)throws {
-		guard let d = xmlItem.attributes["d"] else {
-			throw PathElementError.missingRequiredAttribute("d")
-		}
-		self.d = d
-		strokeColor = xmlItem.attributes["stroke"].flatMap({ Scanner(string: $0).scanCssColor() })
-		fillColor = xmlItem.attributes["fill"].flatMap({ Scanner(string: $0).scanCssColor() })
-		//TODO: stroke-width
-	}
-	
-	public var xml:XMLItem {
-		var attributes:[String:String] = [:]
-		attributes["stroke"] = strokeColor?.valueString
-		attributes["fill"] = fillColor?.valueString
-		//TODO: stroke width
-		return XMLItem(name:"path", attributes:, children:[])
-	}
-	
-}
-*/

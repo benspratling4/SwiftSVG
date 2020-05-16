@@ -25,7 +25,10 @@ extension Path {
 			let command:String = try scanner.scanCharactersInSet(Path.controlCharacterSet) //scanCharacterFromSet()
 			switch command {
 			case "M":
-				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 2 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
+				let y:Float64 = doubles[1]
 				move(to:Point(x:x, y:y))
 				previousCoords = (x, y)
 				
@@ -33,13 +36,19 @@ extension Path {
 				guard let coords = previousCoords else {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
-				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 2 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
+				let y:Float64 = doubles[1]
 				let finalCoords = (x + coords.0, y + coords.1)
 				move(to:Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
 				
 			case "L":
-				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 2 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
+				let y:Float64 = doubles[1]
 				addLine(to: Point(x:x, y:y))
 				previousCoords = (x, y)
 				
@@ -47,7 +56,10 @@ extension Path {
 				guard let coords = previousCoords else {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
-				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 2 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
+				let y:Float64 = doubles[1]
 				let finalCoords = (x + coords.0, y + coords.1)
 				addLine(to: Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
@@ -57,7 +69,9 @@ extension Path {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
-				let x:Double = try scanner.scanDouble()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 1 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
 				let finalCoords = (x, coords.1)
 				addLine(to: Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
@@ -67,7 +81,9 @@ extension Path {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
-				let x:Double = try scanner.scanDouble()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 1 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
 				let finalCoords = (x+coords.0, coords.1)
 				addLine(to: Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
@@ -77,7 +93,9 @@ extension Path {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
-				let y:Double = try scanner.scanDouble()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 1 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let y:Float64 = doubles[0]
 				let finalCoords = (coords.0, y)
 				addLine(to: Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
@@ -87,7 +105,9 @@ extension Path {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
 				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
-				let y:Double = try scanner.scanDouble()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 1 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let y:Float64 = doubles[0]
 				let finalCoords = (coords.0, coords.1+y)
 				addLine(to: Point(x:finalCoords.0, y:finalCoords.1))
 				previousCoords = finalCoords
@@ -98,7 +118,12 @@ extension Path {
 //				let _:String? = try? scanner.scanCharactersInSet(.delimiterSet)
 				
 			case "Q":
-				let (x1, y1, x2, y2) = try scanner.scanDelimitedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 4 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x1:Float64 = doubles[0]
+				let y1:Float64 = doubles[1]
+				let x2:Float64 = doubles[2]
+				let y2:Float64 = doubles[3]
 				addCurve(near: Point(x: x1, y: y1), to: Point(x: x2, y: y2))
 				previousCoords = (x2, y2)
 				
@@ -106,13 +131,25 @@ extension Path {
 				guard let coords = previousCoords else {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
-				let (x1, y1, x2, y2) = try scanner.scanDelimitedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 4 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x1:Float64 = doubles[0]
+				let y1:Float64 = doubles[1]
+				let x2:Float64 = doubles[2]
+				let y2:Float64 = doubles[3]
 				let finalCoords = (coords.0+x2, coords.1+y2)
 				addCurve(near: Point(x: x1+coords.0, y: y1+coords.1), to: Point(x: finalCoords.0, y: finalCoords.1))
 				previousCoords = finalCoords
 				
 			case "C":
-				let (x1, y1, x2, y2, x3, y3) = try scanner.scanDelimitedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 6 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x1:Float64 = doubles[0]
+				let y1:Float64 = doubles[1]
+				let x2:Float64 = doubles[2]
+				let y2:Float64 = doubles[3]
+				let x3:Float64 = doubles[4]
+				let y3:Float64 = doubles[5]
 				addCurve(near: Point(x: x1, y: y1), and: Point(x: x2, y: y2), to: Point(x: x3, y: y3))
 				previousCoords = (x3, y3)
 				
@@ -120,7 +157,14 @@ extension Path {
 				guard let coords = previousCoords else {
 					throw SVGPathFormatError.invalidFormat(scanner.scanLocation)
 				}
-				let (x1, y1, x2, y2, x3, y3) = try scanner.scanDelimitedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 6 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x1:Float64 = doubles[0]
+				let y1:Float64 = doubles[1]
+				let x2:Float64 = doubles[2]
+				let y2:Float64 = doubles[3]
+				let x3:Float64 = doubles[4]
+				let y3:Float64 = doubles[5]
 				let finalCoords = (coords.0+x3, coords.1+y3)
 				addCurve(near: Point(x: coords.0+x1, y: coords.1+y1), and: Point(x: coords.0+x2, y: coords.1+y2), to: Point(x: finalCoords.0, y: finalCoords.1))
 				previousCoords = finalCoords
@@ -138,7 +182,10 @@ extension Path {
 				//new control point is reflected over
 				let diff = end - control1
 				let newControl = end + diff
-				let (x, y) = try scanner.scanSpaceSeparatedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 2 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
+				let y:Float64 = doubles[1]
 				let newEnd = (x + coords.0, y + coords.1)
 				addCurve(near: newControl, to: Point(x: newEnd.0, y: newEnd.1))
 				previousCoords = newEnd
@@ -153,9 +200,12 @@ extension Path {
 				//new control point is reflected over
 				let diff = end - control1
 				let newControl = end + diff
-				let newEnd = try scanner.scanSpaceSeparatedDoubles()
-				addCurve(near: newControl, to: Point(x: newEnd.0, y: newEnd.1))
-				previousCoords = newEnd
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 2 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let x:Float64 = doubles[0]
+				let y:Float64 = doubles[1]
+				addCurve(near: newControl, to: Point(x: x, y: y))
+				previousCoords = (x, y)
 				
 			case "S":
 				guard let segment = subPaths.last?.segments.last
@@ -166,7 +216,12 @@ extension Path {
 				//new control point is reflected over
 				let diff = end - control2
 				let newControl1 = end + diff
-				let (cx2, cy2, ex, ey) = try scanner.scanDelimitedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 4 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let cx2:Float64 = doubles[0]
+				let cy2:Float64 = doubles[1]
+				let ex:Float64 = doubles[2]
+				let ey:Float64 = doubles[3]
 				addCurve(near: newControl1, and: Point(x: cx2, y: cy2), to: Point(x: ex, y: ey))
 				previousCoords = (ex, ey)
 				
@@ -179,7 +234,12 @@ extension Path {
 				//new control point is reflected over
 				let diff = end - control2
 				let newControl1 = end + diff
-				let (cx2, cy2, ex, ey) = try scanner.scanDelimitedDoubles()
+				let doubles:[Float64] = scanner.scanDoublesUntilNoLongerScanable()
+				guard doubles.count == 4 else { throw SVGPathFormatError.invalidFormat(scanner.scanLocation) }
+				let cx2:Float64 = doubles[0]
+				let cy2:Float64 = doubles[1]
+				let ex:Float64 = doubles[2]
+				let ey:Float64 = doubles[3]
 				let newControl2 = end + Point(x: cx2, y: cy2)
 				let newEnd = end + Point(x: ex, y: ey)
 				addCurve(near:newControl1, and:newControl2, to:newEnd)

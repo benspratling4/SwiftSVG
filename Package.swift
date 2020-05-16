@@ -14,9 +14,12 @@ let package = Package(
             targets: ["SwiftSVG"]),
     ]
     ,dependencies: [
-		.package(url: "https://github.com/benspratling4/SwiftGraphicsCore.git", from: "2.0.0"),
+		.package(url: "https://github.com/benspratling4/SwiftGraphicsCore.git", .branch("master")),
+//		.package(url: "https://github.com/benspratling4/SwiftGraphicsCore.git", bran),
+//		.package(path: "../SwiftGraphicsCore"),	//for development
 		.package(url: "https://github.com/benspratling4/SwiftPatterns.git", from: "3.0.0"),
-		.package(path: "../SwiftCSS"),
+		.package(url: "https://github.com/benspratling4/SwiftCSS.git", from: "0.1.0"),
+//		.package(path: "../SwiftCSS"),	//for development
 		.package(url: "https://github.com/benspratling4/SwiftPNG.git", from: "2.0.0"),	//for testing
     ]
     ,targets: [

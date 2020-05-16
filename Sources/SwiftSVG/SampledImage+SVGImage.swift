@@ -17,6 +17,7 @@ extension SampledImage {
 		let finalSize:Size = size ?? svgImage.viewBox.size
 		self.init(width:Int(finalSize.width.rounded()), height:Int(finalSize.height.rounded()), colorSpace:GenericRGBAColorSpace(hasAlpha: true), bytes:nil)
 		let context = SampledGraphicsContext(imageBuffer: self)
+		context.antialiasing = .subsampling(resolution: .three)
 		context.drawSVG(svgImage, in: Rect(origin: .zero, size: finalSize))
 	}
 	
