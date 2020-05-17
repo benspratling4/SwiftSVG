@@ -11,7 +11,7 @@ import SwiftGraphicsCore
 import SwiftCSS
 
 ///Root of an SVG graphic
-public class SVGImage {
+public class SVGImage : SVGChildContainer {
 	
 	public init(size:Size, preserveAspectRatio:AspectRatioPreservation = .default, style:[RuleSet] = [], defs:[SVGChild] = [], children:[SVGChild] = []) {
 		viewBox = Rect(origin: .zero, size: size)
@@ -79,6 +79,43 @@ public class SVGImage {
 				"preserveAspectRatio" : preserveAspectRatio.xmlAttribute
 			]
 			,children: allChildren)
+	}
+	
+	
+	///replaces all use children with a copy of their 
+	public func resolveUseElements() {
+		resolveUseElements(in: self)
+	}
+	
+	internal func resolveUseElements(in container:SVGChildContainer ) {
+		for (i, child) in container.children.enumerated() {
+			if let groupChild:SVGChildContainer = child as? SVGChildContainer {
+				resolveUseElements(in: groupChild)
+				continue
+			}
+			guard let useChild:UseElement = child as? UseElement
+				,let href:String = useChild.defId
+				,let urlComponents:URLComponents = URLComponents(string: href)
+				,urlComponents.host == nil	//we're not supporting downloads at this time
+				,let fragment:String = urlComponents.fragment
+				else { continue }
+			guard let copiedChild = defs.filter({$0.id == fragment }).first?.deepCopy ?? childWithId(fragment)?.deepCopy else { continue }
+			if var drawableChild = copiedChild as? DrawableChild {
+				if let useX = useChild.x {
+					drawableChild.x = useX
+				}
+				if let useY = useChild.y {
+					drawableChild.y = useY
+				}
+				if let useWidth = useChild.width {
+					drawableChild.width = useWidth
+				}
+				if let useHeight = useChild.height {
+					drawableChild.height = useHeight
+				}
+			}
+			container.children[i] = copiedChild
+		}
 	}
 	
 }

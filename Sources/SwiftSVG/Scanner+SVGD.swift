@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftCSS
 
 extension Scanner {
 	
@@ -112,6 +113,30 @@ extension Scanner {
 		
 	}
 */
+	
+	///only accepts percentage, relative & absolute length units, if no unit is found, uses .px
+	public func scanLengthDimesions()->(Float64, DimensionUnit)? {
+		let originalLocation = scanLocation
+		guard let number = scanDouble() else {
+			return nil
+		}
+		guard let units = scanCharacters(from:.cssUnitCharacters) else {
+			return (number, AbsoluteLengthUnits.px)
+		}
+		if let unit = PercentageUnits(rawValue: units) {
+			return (number, unit)
+		}
+		if let unit = RelativeLengthUnits(rawValue: units) {
+			return (number, unit)
+		}
+		if let unit = AbsoluteLengthUnits(rawValue: units) {
+			return (number, unit)
+		}
+		
+		scanLocation = originalLocation
+		return nil
+	}
+	
 	
 }
 

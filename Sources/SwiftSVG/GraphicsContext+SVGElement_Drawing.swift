@@ -15,7 +15,8 @@ extension GraphicsContext {
 	public func drawSVG(_ svg:SVGImage, in rect:Rect) {
 		//using viewBox and AspectRatioPreservation, set up the initial transform and save the G state
 		currentState.applyTransformation(svg.preserveAspectRatio.transform(viewBox: svg.viewBox, drawnIn: rect))
-		//TODO: replace use with defs
+		//replace use with defs
+		svg.resolveUseElements()
 		//TODO: resolve styles
 		//TODO: resolve url(# ) style elements
 		//TODO: resolve dimensions

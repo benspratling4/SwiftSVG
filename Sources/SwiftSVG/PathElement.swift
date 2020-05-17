@@ -34,6 +34,11 @@ public class PathElement : SVGChild {
 	
 	public var style:[Declaration] = []
 	
+	public var x:SwiftCSS.Dimension?
+	public var y:SwiftCSS.Dimension?
+	public var width:SwiftCSS.Dimension?
+	public var height:SwiftCSS.Dimension?
+	
 	public init?(xmlItem:XMLItem) {
 		guard let d:String = xmlItem.attributes["d"]
 			,let path:Path = try? Path(svg_d: d)
@@ -68,15 +73,25 @@ public class PathElement : SVGChild {
 				strokeWidth = Dimension(number:number, unit:AbsoluteLengthUnits.px)
 			}
 		}
+		x = xmlItem.attributes["x"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
+		y = xmlItem.attributes["y"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
+		width = xmlItem.attributes["width"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
+		height = xmlItem.attributes["height"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
+		
+		//if
+		
 		//find more things?
 	}
-	
 	
 	public var xmlItem:XMLItem {
 		var additionalAttributes:[String:String] = ["d":path.svg_d]
 		if let id:String = self.id {
 			additionalAttributes["id"] = id
 		}
+		additionalAttributes["x"] = x?.cssString
+		additionalAttributes["y"] = y?.cssString
+		additionalAttributes["width"] = width?.cssString
+		additionalAttributes["height"] = height?.cssString
 		if classes.count > 0
 			,let classString:String = classes.joined(separator: " ") {
 			additionalAttributes["class"] = classString
@@ -100,8 +115,12 @@ public class PathElement : SVGChild {
 		return XMLItem(name: "path", attributes:additionalAttributes, children: [])
 	}
 	
+	
+	public var deepCopy:SVGChild? {
+		return PathElement(xmlItem: xmlItem)
+	}
+	
 }
-
 
 
 extension PathElement : DrawableChild {
@@ -113,13 +132,33 @@ extension PathElement : DrawableChild {
 			,let strokeColor:Shader = self.strokeShader {
 			stroke = (strokeColor, StrokeOptions(lineWidth: strokeWidth))
 		}
+		//if x, y are different, use those
+		var transform:Transform2D = .identity
+		if let x = self.x {
+			//FIXME: resolve other units
+			transform = transform.concatenate(with: Transform2D(translateX: x.number, y: 0.0))
+		}
+		if let y = self.y {
+			//FIXME: resolve other units
+			transform = transform.concatenate(with: Transform2D(translateX: 0.0, y: y.number))
+		}
 		
-		context.drawPath(path, fillShader: fillShader, stroke: stroke)
+		context.drawPath(transform.transform(path), fillShader: fillShader, stroke: stroke)
 	}
 	
 	public var boundingBox:Rect {
+		//if x, y are different, use those
+		var transform:Transform2D = .identity
+		if let x = self.x {
+			//FIXME: resolve other units
+			transform = transform.concatenate(with: Transform2D(translateX: x.number, y: 0.0))
+		}
+		if let y = self.y {
+			//FIXME: resolve other units
+			transform = transform.concatenate(with: Transform2D(translateX: 0.0, y: y.number))
+		}
 		//FIXME: add line thickness
-		return path.boundingBox ?? Rect(origin: .zero, size: .zero)
+		return transform.transform(path).boundingBox ?? Rect(origin: .zero, size: .zero)
 	}
 	
 }
