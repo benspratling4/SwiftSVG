@@ -8,7 +8,7 @@
 import Foundation
 import SwiftPatterns
 import SwiftCSS
-
+import SwiftGraphicsCore
 
 
 public class UseElement : SVGChild {
@@ -19,16 +19,17 @@ public class UseElement : SVGChild {
 		y = xmlItem.attributes["y"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
 		width = xmlItem.attributes["width"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
 		height = xmlItem.attributes["height"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
-		
+		transforms = xmlItem.attributes["transform"].flatMap({Scanner(string: $0).scanSVGTransform()}) ?? []
 		//TODO: write me
 	}
 	
-	public init(defId:String?, x:SwiftCSS.Dimension?, y:SwiftCSS.Dimension?, width:SwiftCSS.Dimension?, height:SwiftCSS.Dimension?) {
+	public init(defId:String?, x:SwiftCSS.Dimension?, y:SwiftCSS.Dimension?, width:SwiftCSS.Dimension?, height:SwiftCSS.Dimension?, transforms:[SVGTransform] = []) {
 		self.defId = defId
 		self.x = x
 		self.y = y
 		self.width = width
 		self.height = height
+		self.transforms = transforms
 	}
 	
 	public var defId:String?
@@ -42,6 +43,7 @@ public class UseElement : SVGChild {
 		attributes["y"] = y?.cssString
 		attributes["width"] = width?.cssString
 		attributes["height"] = height?.cssString
+		attributes["transform"] = transforms.count > 1 ? transforms.svgString : nil
 		return XMLItem(name: "use", attributes: attributes, children: [])
 	}
 	
@@ -51,6 +53,7 @@ public class UseElement : SVGChild {
 	public var y:SwiftCSS.Dimension?
 	public var width:SwiftCSS.Dimension?
 	public var height:SwiftCSS.Dimension?
+	public var transforms:[SVGTransform] = []
 	
 	//TODO: style, class, additional attributes, etc...
 	

@@ -29,7 +29,7 @@ class UseResolutionTests : XCTestCase {
 <path id="square" fill="#0052D9" d="M10,10L30,10L30,30L10,30L10,10z"/>
 </defs>
 <use x="0" y="0" href="#square" xlink:href="#sqaure" />
-<use x="40" y="0" href="#square" xlink:href="#sqaure" />
+<use x="40" y="0" href="#square" transform="rotate(10)" xlink:href="#sqaure" />
 </svg>
 """
 		guard let xmlItem = DataToXMLItemFactory(data: svg.data(using: .utf8)!).documentItem

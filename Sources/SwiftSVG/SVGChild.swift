@@ -65,6 +65,7 @@ public protocol DrawableChild : SVGChild {
 	var y:SwiftCSS.Dimension? { get set }
 	var width:SwiftCSS.Dimension? { get set }
 	var height:SwiftCSS.Dimension? { get set }
+	var transforms:[SVGTransform] { get set }
  
 	
 }

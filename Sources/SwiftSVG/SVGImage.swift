@@ -107,6 +107,9 @@ public class SVGImage : SVGChildContainer {
 				if let useY = useChild.y {
 					drawableChild.y = useY
 				}
+				if useChild.transforms.count > 0 {
+					drawableChild.transforms = useChild.transforms
+				}
 				if let useWidth = useChild.width {
 					drawableChild.width = useWidth
 				}

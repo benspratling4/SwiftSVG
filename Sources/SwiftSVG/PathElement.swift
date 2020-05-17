@@ -21,6 +21,7 @@ public class PathElement : SVGChild {
 		self.path = path
 		self.id = id
 		self.classes = classes
+		transforms = []
 	}
 	
 	public var path:Path
@@ -38,6 +39,9 @@ public class PathElement : SVGChild {
 	public var y:SwiftCSS.Dimension?
 	public var width:SwiftCSS.Dimension?
 	public var height:SwiftCSS.Dimension?
+	
+	//if x or y is also specified, they are applied after this transform
+	public var transforms:[SVGTransform]
 	
 	public init?(xmlItem:XMLItem) {
 		guard let d:String = xmlItem.attributes["d"]
@@ -78,6 +82,7 @@ public class PathElement : SVGChild {
 		width = xmlItem.attributes["width"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
 		height = xmlItem.attributes["height"].flatMap({ Scanner(string: $0).scanLengthDimesions() }).flatMap({ SwiftCSS.Dimension(number: $0.0, unit: $0.1) })
 		
+		transforms = xmlItem.attributes["transform"].flatMap({Scanner(string: $0).scanSVGTransform()}) ?? []
 		//if
 		
 		//find more things?
@@ -111,6 +116,7 @@ public class PathElement : SVGChild {
 		if let width = strokeWidth {
 			additionalAttributes["stroke-width"] = width.cssString
 		}
+		additionalAttributes["transform"] = transforms.count > 0 ? transforms.svgString : nil
 		
 		return XMLItem(name: "path", attributes:additionalAttributes, children: [])
 	}
@@ -133,7 +139,7 @@ extension PathElement : DrawableChild {
 			stroke = (strokeColor, StrokeOptions(lineWidth: strokeWidth))
 		}
 		//if x, y are different, use those
-		var transform:Transform2D = .identity
+		var transform:Transform2D = self.transforms.transform2D(center: boundingBox.center)
 		if let x = self.x {
 			//FIXME: resolve other units
 			transform = transform.concatenate(with: Transform2D(translateX: x.number, y: 0.0))
