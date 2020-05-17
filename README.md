@@ -7,12 +7,21 @@ WIP feel free to contribute.  I'm aiming at supporting parsing all SVG, but rend
 ## Agenda
 
 Parse the SVG structural elements.
-Focus on representing the SVG elements and attributes directly, init'ing from XMLItem, producing XMLItem with full round-trip support. 
+
+Focus on representing the SVG elements and attributes directly, init'ing from XMLItem, producing XMLItem with full round-trip support.
+
 Next priority is drawing, be able to draw elements with explicit attributes. Fill √, stroke X
-Handle replacing <use> with the identified element.  √
+
+Handle replacing `<use>` with the identified element.  √
+
 Add support for groups, transforms. - In progress
-Then build out the full CSS mechanism.  X, SwiftCSS does exist, but is not applied
+
+Then build out the full CSS mechanism.  X, [SwiftCSS]("https://github.com/benspratling4/SwiftCSS") does exist, but is not applied
+
+Add support for units, resolving length dimensions & percentages of viewport.  X
+
 Once path supports all features of geometry styling, CSS, etc..., add other shape elements, circle, rect, ellipse, polyline, polygon, etc... X
+
 Last, Build a fully-parsing implementation of SwiftTrueTypeFont, and implement text content elements.  X
 
 
@@ -29,13 +38,13 @@ Status: parses viewBox & preserveAspectRatio, defs, style, and children.
 
 ## Getting a raster image from an `SVGImage`
 
-### Get a `SampledImage` from an `SVGImage`
+### Get a `SampledImage` (basically an image byte array,defined in [SwiftGraphicsCore]("https://github.com/benspratling4/SwiftGraphicsCore")) from an `SVGImage`
 
 `let svgImage:SVGImage = ...`
 
 `let sampledImage:SampledImage = SampledImage(svgImage:svgImage)` 
 
-A `SampledImage` can then be, for instance, turned into a *.png file with `SwiftPNG`.
+A `SampledImage` can then be, for instance, turned into a *.png file with [`SwiftPNG`]("https://github.com/benspratling4/SwiftPNG").
 
 
 ### Draw SVG images in other `GraphicsContext`s
@@ -74,7 +83,7 @@ All attributes will be directly on the elements.
 
 ### Exporting an `SVGImage` as XML
 
-An `SVGImage` can be directly exported as-is to XML with 
+An `SVGImage` can be directly exported as-is to XML with  `XMLItem`, defined in [`SwiftPatterns`]("https://github.com/benspratling4/SwiftPatterns").
 
 `let svgImage:SVGImage = ...`
 
@@ -84,27 +93,27 @@ An `SVGImage` can be directly exported as-is to XML with
 
 ## Element Statuses:
 
-### <svg>
+### `<svg>`
 Supports `viewBox`, `defs` and `style` children, other defined drawable children.
 
-### <path>
+### `<path>`
 Supports `d` attribute, & fill, stroke algorithms are still very slow & imprecise.
 gradient fills are in SwiftGraphicsCore, but not implemented here, yet.
 
-### <use>
-Supports x, y, transform
+### `<use>`
+Supports `x`, `y`, `transform`
 
-### <defs>
+### `<defs>`
 Supported
 
-### <g>
+### `<g>`
 In progress
 
-### <a>
+### `<a>`
 Not supproted yet
 
 ### Shape elements
 The last step in development is to take all the lessons learned from css styles, etc...  and parse elements for other shape elements 
 
-### <text>
-This requires building out SwiftTrueTypeFont, currently not advanced enough to be used.
+### `<text>`
+This requires building out `SwiftTrueTypeFont`, currently not advanced enough to be used.
