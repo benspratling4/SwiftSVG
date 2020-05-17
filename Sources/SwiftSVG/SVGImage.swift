@@ -28,6 +28,16 @@ public class SVGImage : SVGChildContainer {
 	public var defs:[SVGChild] = []
 	public var children:[SVGChild] = []
 	
+	///
+	public convenience init?(data:Data) {
+		guard let xmlItem = try? DataToXMLItemFactory(data: data).documentItem
+			,let svgItem:XMLItem = xmlItem.child(named: "svg")
+			else {
+			return nil
+		}
+		try? self.init(xmlItem:svgItem)
+	}
+	
 	///node name must be "svg"
 	public init(xmlItem:XMLItem)throws {
 		//extract the viewBox

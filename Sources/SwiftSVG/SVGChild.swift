@@ -46,6 +46,7 @@ public class SVGChildFactory {
 	public var knownChildNodeInitMethods:[String:(XMLItem)->(SVGChild?)] = [
 		"path":PathElement.init(xmlItem:),
 		"use":UseElement.init(xmlItem:),
+		"g":GroupElement.init(xmlItem:),
 	]
 	
 	public func child(xmlItem:XMLItem)->SVGChild? {

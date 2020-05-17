@@ -4,51 +4,107 @@ Pure-Swift parsing, drawing, exporting of static SVG.
 WIP feel free to contribute.  I'm aiming at supporting parsing all SVG, but rendering only static, non-scripted files.  Something like "SVG Tiny".
 
 
+## Agenda
+
+Parse the SVG structural elements.
+Focus on representing the SVG elements and attributes directly, init'ing from XMLItem, producing XMLItem with full round-trip support. 
+Next priority is drawing, be able to draw elements with explicit attributes. Fill √, stroke X
+Handle replacing <use> with the identified element.  √
+Add support for groups, transforms. - In progress
+Then build out the full CSS mechanism.  X, SwiftCSS does exist, but is not applied
+Once path supports all features of geometry styling, CSS, etc..., add other shape elements, circle, rect, ellipse, polyline, polygon, etc... X
+Last, Build a fully-parsing implementation of SwiftTrueTypeFont, and implement text content elements.  X
+
+
 ## Reading SVG
 
-TODO: Write methods which parse SVG and represent the data model as an SVGImage.
+Write methods which parse SVG and represent the data model as an SVGImage.
 
-`let image = SVGImage("<svg ...>...</svg>")`
+`let svgData:Data = "<svg ...>...</svg>".data(using:.utf8)!`
 
+`let image:SVGImage? = SVGImage(data:svgData)`
 
-TODO: write code which can play back an SVGImage as drawing commands into any SwiftGraphicsCore.GraphicsContext
-
-`extension SwiftGraphicsContext {`
-
-`func drawSVGImage(_ image:SVGImage, in rect:Rect, pixelsPerPoint:Int) `
-
-`}`
+Status: parses viewBox & preserveAspectRatio, defs, style, and children.
 
 
-TODO: write a convenience init which can produce a SampledImage from an SVGElement at a chosen pizel/point resolution.
+## Getting a raster image from an `SVGImage`
+
+### Get a `SampledImage` from an `SVGImage`
+
+`let svgImage:SVGImage = ...`
+
+`let sampledImage:SampledImage = SampledImage(svgImage:svgImage)` 
+
+A `SampledImage` can then be, for instance, turned into a *.png file with `SwiftPNG`.
 
 
-### Get a SwiftGraphicsCore.Path from an SVG "d" string:
+### Draw SVG images in other `GraphicsContext`s
+
+Creating a `SampledImage` directly from an `SVGImage` is actually a convenience method.
+
+It uses a `SampledGraphicsContext` and uses the underlying extension on `GraphicsContext` to resolve the structure and style of an SVGImge and produce drawing commands.
 
 `import SwiftGraphicsCore`
 
-`import SwiftSVG`
+`let context:GraphicsContext = ...`
 
-`let path = try Path(svg_d:"M26.7,19.5c2.8,0.6,4.8,1.5,6.2,2.8z")`
+`let image:SVGImage = ...`
 
-TODO: add "arc" support.
-
-## Writing to SVG
-
-TODO: Implement a concrete SwiftGraphicsCore.GraphicsContext which records drawing commands and can export an SVGElement.
-
-
-`let context = SVGGraphicsContext(....)`
-
-`context.drawPath(.....)`
-
-`let svgImage:SVGImage = context.svgImage`
+`context.drawSVG(image, in:Rect(...)) `
 
 
 
-TODO: Write a method on SVGElement which can generate appropriate self-contained XML.
+## Writing to XML
+
+Or you can construct an `SVGImage` by creating it in memory and setting its children & properties, or you can use a `SVGGraphicsContext` to capture drawing commands.
+
+### Record from drawing commands
+
+You can create an `SVGImage` from drawing commands on `GraphicsContext`, which is one of the main reasons `GraphicsContext` is a protocol and `SampledGraphicsContext` is just a conforming type. 
+
+Instead of `SampledGraphicsContext`, create an `SVGGraphicsContext` and make drawing commands on it as you would have the `SampledGraphicsContext`.
+
+Then ask for the `.svgImage` property of the context, which live-records you drawing commands.
+
+There will be no styles or defs, except linear or radial gradients.  
+`saveState()` `popState()` , and transforms get recorded as `<g>` elements.
+All shapes will be `<path>` elements, not understood as `<circle>`, `<polygon>` or others.
+All attributes will be directly on the elements.
+
+
+### Exporting an `SVGImage` as XML
+
+An `SVGImage` can be directly exported as-is to XML with 
+
+`let svgImage:SVGImage = ...`
+
+`let xml:Data? = svgImage.xmlItem.string.data(using:.utf8)`
 
 
 
+## Element Statuses:
 
+### <svg>
+Supports `viewBox`, `defs` and `style` children, other defined drawable children.
 
+### <path>
+Supports `d` attribute, & fill, stroke algorithms are still very slow & imprecise.
+gradient fills are in SwiftGraphicsCore, but not implemented here, yet.
+
+### <use>
+Supports x, y, transform
+
+### <defs>
+Supported
+
+### <g>
+In progress
+
+### <a>
+Not supproted yet
+
+### Shape elements
+The last step in development is to take all the lessons learned from css styles, etc...  and parse elements for other shape elements 
+
+### <text>
+This requires building out SwiftTrueTypeFont, currently not advanced enough to be used.
