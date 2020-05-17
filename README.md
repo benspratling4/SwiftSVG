@@ -16,7 +16,7 @@ Handle replacing `<use>` with the identified element.  √
 
 Add support for groups, transforms. - In progress
 
-Then build out the full CSS mechanism.  X, [SwiftCSS]("https://github.com/benspratling4/SwiftCSS") does exist, but is not applied
+Then build out the full CSS mechanism.  X, [SwiftCSS](https://github.com/benspratling4/SwiftCSS) does exist, but is not applied
 
 Add support for units, resolving length dimensions & percentages of viewport.  X
 
@@ -38,13 +38,13 @@ Status: parses viewBox & preserveAspectRatio, defs, style, and children.
 
 ## Getting a raster image from an `SVGImage`
 
-### Get a `SampledImage` (basically an image byte array,defined in [SwiftGraphicsCore]("https://github.com/benspratling4/SwiftGraphicsCore")) from an `SVGImage`
+### Get a `SampledImage` (basically an image byte array,defined in [SwiftGraphicsCore](https://github.com/benspratling4/SwiftGraphicsCore)) from an `SVGImage`
 
 `let svgImage:SVGImage = ...`
 
 `let sampledImage:SampledImage = SampledImage(svgImage:svgImage)` 
 
-A `SampledImage` can then be, for instance, turned into a *.png file with [`SwiftPNG`]("https://github.com/benspratling4/SwiftPNG").
+A `SampledImage` can then be, for instance, turned into a *.png file with [`SwiftPNG`](https://github.com/benspratling4/SwiftPNG).
 
 
 ### Draw SVG images in other `GraphicsContext`s
@@ -83,7 +83,7 @@ All attributes will be directly on the elements.
 
 ### Exporting an `SVGImage` as XML
 
-An `SVGImage` can be directly exported as-is to XML with  `XMLItem`, defined in [`SwiftPatterns`]("https://github.com/benspratling4/SwiftPatterns").
+An `SVGImage` can be directly exported as-is to XML with  `XMLItem`, defined in [`SwiftPatterns`](https://github.com/benspratling4/SwiftPatterns).
 
 `let svgImage:SVGImage = ...`
 
